@@ -3,9 +3,9 @@ A pseudo-neofetch PowerShell implementation.
 
 This was heavily inspired by the following projects (and honestly, probably better implementations):
 
-https://github.com/dylanaraps/neofetch
-https://github.com/JulianChow94/Windows-screenFetch
-https://github.com/KittyKatt/screenFetch
+* https://github.com/dylanaraps/neofetch
+* https://github.com/JulianChow94/Windows-screenFetch
+* https://github.com/KittyKatt/screenFetch
 
 I originally meant to fork Windows-screenfetch and modify the logo but I got carried away and ended up just coding it from start to finish.
 
