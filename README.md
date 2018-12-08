@@ -1,4 +1,5 @@
-# sysfetch
+# Write-SystemInformation
+## (or `sysfetch`, as I've aliased it)
 A pseudo-neofetch PowerShell implementation.
 
 This was heavily inspired by the following projects (and honestly, all of them are probably better implementations):
