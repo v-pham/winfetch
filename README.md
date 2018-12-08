@@ -1,15 +1,15 @@
 # sysfetch
 A pseudo-neofetch PowerShell implementation.
 
-This was heavily inspired by the following projects (and honestly, probably better implementations):
+This was heavily inspired by the following projects (and honestly, all of them are probably better implementations):
 
 * https://github.com/dylanaraps/neofetch
 * https://github.com/JulianChow94/Windows-screenFetch
 * https://github.com/KittyKatt/screenFetch
 
-I originally meant to fork Windows-screenfetch and modify the logo but I got carried away and ended up just coding it from start to finish.
+I just wanted something like neofetch without any dependency on anything other than PowerShell (which led me to windows-screenfetch) but the logo looked off to me. Being bored and needlessly picky, I originally meant to fork Windows-screenfetch and just modify the logo but I got carried away and ended up just coding it all the way.
 
-At some point I'll probably add an option to use a "PowerShell" ASCII logo (if I can find one I like or get bored and find an easy way to do it myself). But the baseline is here and can be expanded upon later.
+At some point I'll probably add an option to use a "PowerShell" ASCII logo and see if it can't be used on PowerShell Core on Linux.
 
 # Usage
 
