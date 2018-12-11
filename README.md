@@ -22,4 +22,4 @@ I have this in a local code dump and source the .ps1 file in my default profile 
 . \path\to\Write-SystemInformation.ps1
 ```
 
-I add it things to the 32-bit profile which in turn is sourced by my 64-bit profile because I like to keep both environments consistent and don't like to maintain two different `profile.ps1`.
+I prefer to add things to the 32-bit profile which in turn is sourced by my 64-bit profile because I like to keep both environments consistent and don't like to maintain two different `profile.ps1`.
