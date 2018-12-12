@@ -22,4 +22,14 @@ I have this in a local code dump and source the .ps1 file in my default profile 
 . \path\to\Write-SystemInformation.ps1
 ```
 
-I prefer to add things to the 32-bit profile which in turn is sourced by my 64-bit profile because I like to keep both environments consistent and don't like to maintain two different `profile.ps1`.
+Once it is dot-sourced, call the function `Write-SystemInformation' (or use one of its aliases):
+
+```powershell
+# Example 1. Call the function using its defined name and display the default ASCII Windows logo
+
+Write-SystemInformation
+
+# Example 2. Call the function via one of its aliases and display the ASCII PowerShell logo
+sysfetch -AsciiLogo PowerShell
+```
+
