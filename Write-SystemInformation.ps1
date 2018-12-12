@@ -15,7 +15,25 @@ param (
 
 begin
 {
-[string[]]$Logo = @"
+switch ($AsciiLogo.ToLower()){
+ "powershell" {
+    [string[]]$Logo = @'
+     .sdmmmmmmmmmmmmmmmmmmmmmmmmmdy-
+    .NMMMMMMMNMMMMMMMMMMMMMMMMMMMMMy
+    sMMMMMMN. `sMMMMMMMMMMMMMMMMMMM/
+   `MMMMMMMMo`  .yMMMMMMMMMMMMMMMMN 
+   oMMMMMMMMMN+   -dMMMMMMMMMMMMMMo 
+  `NMMMMMMMMMMMm:   :mMMMMMMMMMMMN` 
+  +MMMMMMMMMMMMMMh.   oMMMMMMMMMMs  
+  mMMMMMMMMMMMMMh:  `/dMMMMMMMMMM.  
+ /MMMMMMMMMMMd+`  :yNMMMMMMMMMMMh   
+ dMMMMMMMMNs.  .omMMMMMMMMMMMMMM-   
+:MMMMMMMy:  `+d/        mMMMMMMd    
+hMMMMMMN:`/hMMMy+++++++oNMMMMMM/    
+NMMMMMMMMMMMMMMMMMMMMMMMMMMMMMh     
+-syhhhhhhhhhhhhhhhhhhhhhhhhys:      
+'@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 } }
+ default { [string[]]$Logo = @"
                   ......::::::|
 .....:::::::| |||||||||||||||||
 ||||||||||||| |||||||||||||||||
@@ -29,7 +47,8 @@ begin
 :::::|||||||| |||||||||||||||||
           ''' '''::::::||||||||
                         '''''':
-"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
+"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 } }
+}
     
     $ColorScheme_Logo = 'Blue'
     $ColorScheme_Primary = 'White'
@@ -111,7 +130,6 @@ end
     
     $LogoPadLength = $($Logo | Measure-Object -Property Length -Maximum).Maximum + $PadLeft + $PadRight
     
-    
     Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Primary -NoNewline
     Write-Host -Object '@' -ForegroundColor $ColorScheme_Secondary -NoNewline
     Write-Host -Object $Env:COMPUTERNAME -ForegroundColor $ColorScheme_Primary -NoNewline
@@ -127,6 +145,7 @@ end
     }
     until ($i -eq "$Env:USERNAME`@$Env:COMPUTERNAME.$ComputerInfo_MachineDomain".Length)
     
+    #TODO: Got lazy here, I just wanted it to run.
     $i = 0
     Write-Host -Object "".PadLeft($PadLeft) -NoNewline
     Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
