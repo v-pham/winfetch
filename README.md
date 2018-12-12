@@ -14,10 +14,12 @@ At some point I'll probably add an option to use a "PowerShell" ASCII logo and s
 
 # Usage
 
-I have this in a local code dump and source the .ps1 file in my default profile but probably will form a proper module later on if it's expanded upon in the future but the script itself simply defines a function, `Write-SystemInformation`. Dot-source the script (i.e. run the script but put a `.` in front which will allow the function definition to persist in the current session. I make the function always available by sourcing the script within my system profile:
+I have this in a local code dump and source the .ps1 file in my default profile but probably will form a proper module later on if it's expanded upon in the future but the script itself simply defines a function, `Write-SystemInformation`. Dot-source the script (i.e. run the script but put a `.` in front which will allow the function definition to persist in the current session) then call the function.
+
+I make the function always available by sourcing the script within my system profile:
 
 ```powershell
-# The following was appended to C:\windows\SysWOW64\WindowsPowerShell\v1.0\profile.ps1
+# The following can be appended to one of the multiple PowerShell profiles (I use `C:\windows\SysWOW64\WindowsPowerShell\v1.0\profile.ps1` which in turn is dot-sourced within my 64-bit PowerShell profile) so it is automatically sourced:
 
 . \path\to\Write-SystemInformation.ps1
 ```
