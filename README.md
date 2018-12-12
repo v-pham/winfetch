@@ -24,12 +24,17 @@ I have this in a local code dump and source the .ps1 file in my default profile 
 
 Once it is dot-sourced, call the function `Write-SystemInformation' (or use one of its aliases):
 
+## Example 1
 ```powershell
-# Example 1. Call the function using its defined name and display the default ASCII Windows logo
+# Call the function using its defined name and display the default ASCII Windows logo
 
 Write-SystemInformation
+```
 
-# Example 2. Call the function via one of its aliases and display the ASCII PowerShell logo
+## Example 2
+```powershell
+# Call the function via one of its aliases and display the ASCII PowerShell logo
+
 sysfetch -AsciiLogo PowerShell
 ```
 
