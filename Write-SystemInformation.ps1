@@ -1,10 +1,12 @@
-﻿function Write-SystemInformation {
+function Write-SystemInformation {
 [CmdletBinding()]
 [Alias('screenfetch', 'neofetch', 'winfetch', 'sysfetch')]
 param (
     [Parameter(Mandatory = $False)]
     [ValidateSet('Windows', 'PowerShell', 'None', IgnoreCase = $true)]
     [string]$AsciiLogo = 'Windows',
+    [ValidateSet('Command', 'PowerShell', IgnoreCase = $true)]
+    [string]$Shell='PowerShell',
     [Parameter(Mandatory = $False)]
     [string[]]$PropertyList,
     [Parameter(Mandatory = $False)]
@@ -15,25 +17,7 @@ param (
 
 begin
 {
-switch ($AsciiLogo.ToLower()){
- "powershell" {
-    [string[]]$Logo = @'
-     .sdmmmmmmmmmmmmmmmmmmmmmmmmmdy-
-    .NMMMMMMMNMMMMMMMMMMMMMMMMMMMMMy
-    sMMMMMMN. `sMMMMMMMMMMMMMMMMMMM/
-   `MMMMMMMMo`  .yMMMMMMMMMMMMMMMMN 
-   oMMMMMMMMMN+   -dMMMMMMMMMMMMMMo 
-  `NMMMMMMMMMMMm:   :mMMMMMMMMMMMN` 
-  +MMMMMMMMMMMMMMh.   oMMMMMMMMMMs  
-  mMMMMMMMMMMMMMh:  `/dMMMMMMMMMM.  
- /MMMMMMMMMMMd+`  :yNMMMMMMMMMMMh   
- dMMMMMMMMNs.  .omMMMMMMMMMMMMMM-   
-:MMMMMMMy:  `+d/        mMMMMMMd    
-hMMMMMMN:`/hMMMy+++++++oNMMMMMM/    
-NMMMMMMMMMMMMMMMMMMMMMMMMMMMMMh     
--syhhhhhhhhhhhhhhhhhhhhhhhhys:      
-'@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 } }
- default { [string[]]$Logo = @"
+[string[]]$Logo_Windows = @"
                   ......::::::|
 .....:::::::| |||||||||||||||||
 ||||||||||||| |||||||||||||||||
@@ -45,10 +29,20 @@ NMMMMMMMMMMMMMMMMMMMMMMMMMMMMMh
 ||||||||||||| |||||||||||||||||
 ||||||||||||| |||||||||||||||||
 :::::|||||||| |||||||||||||||||
-          ''' '''::::::||||||||
-                        '''''':
-"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 } }
-}
+            ' ''''::::::|||||||
+                              '
+"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
+
+[string[]]$Logo_PowerShell = @"
+       __________________
+     /OA(  V||||||||||||||y
+    /////\  \\\\\\\\\\\\\V/
+   ///////\  \\\\\\\\\\\V/
+  ///////'  .A\\\\\\\\\V/
+ /////'  ='AV///////////
+///'  =AV(''''''''')AV/
+'O|v////////////////O
+"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
     
     $ColorScheme_Logo = 'Blue'
     $ColorScheme_Primary = 'White'
@@ -65,7 +59,6 @@ NMMMMMMMMMMMMMMMMMMMMMMMMMMMMMh
     
     # Sort PropertyList to preferred ordered
     $AllProperties = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
-    
 }
 
 process
@@ -73,38 +66,63 @@ process
     $ComputerInfo_OS = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
     $ComputerInfo_CPU = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor\0'
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
-    $ComputerInfo_MachineDomain = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain
+    try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
     else { [string]$ComputerInfo_OS_arch = "x86" }
     
+    if($ComputerInfo_OS.DisplayVersion.Length -eq ""){ $ComputerInfo_OS_DisplayId = $ComputerInfo_OS.ReleaseId }else{ $ComputerInfo_OS_DisplayId = $ComputerInfo_OS.DisplayVersion }
+
     foreach ($Property in $AllProperties)
     {
         if ($PropertyList -contains "$Property")
         {
             switch ($Property.ToLower())
             {
-                "os" { $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS.ReleaseId + ") " + $ComputerInfo_OS_arch) }
+                "os" { $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS_DisplayId + ") " + $ComputerInfo_OS_arch) }
                 "host" { $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion) }
                 "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
                 "uptime" {
-                    $Timespan = New-TimeSpan -Start $([datetime]::ParseExact($(Get-WmiObject win32_operatingsystem | Select-Object -ExpandProperty LastBootupTime).Split('.')[0], 'yyyyMMddHHmmss', $null)) -End $(Get-Date) | Select-Object Days, Hours, Minutes
+                    if($PSVersionTable.PSVersion.Major -eq 5){
+                        $Timespan = New-TimeSpan -Start $([datetime]::ParseExact($(Get-WmiObject Win32_OperatingSystem | Select-Object -ExpandProperty LastBootupTime).Split('.')[0], 'yyyyMMddHHmmss', $null)) -End $(Get-Date) | Select-Object Days, Hours, Minutes
+                    }else{
+                        $Timespan = uptime
+                    }
                     $Uptime = @()
-                    if ($Timespan.Days -gt 0) { $Uptime = $Uptime + "$([string]$Timespan.Days + " days")" }
-                    if ($Timespan.Hours -gt 0) { $Uptime = $Uptime + "$([string]$Timespan.Hours + " hours")" }
-                    if ($Timespan.Minutes -gt 0) { $Uptime = $Uptime + "$([string]$Timespan.Minutes + " mins")" }
+                    if ($Timespan.Days -gt 0) {
+                        if($Timespan.Days -gt 1){ $Unit_suffix = "s" }else{ $Unit_suffix = "" }
+                        $Uptime = $Uptime + "$([string]$Timespan.Days + " day" + $Unit_suffix)"
+                    }
+                    if ($Timespan.Hours -gt 0) {
+                        if($Timespan.Hours -gt 1){ $Unit_suffix = "s" }else{ $Unit_suffix = "" }
+                        $Uptime = $Uptime + "$([string]$Timespan.Hours + " hour" + $Unit_suffix)"
+                    }
+                    if ($Timespan.Minutes -gt 0) {
+                        if($Timespan.Minutes -gt 1){ $Unit_suffix = "s" }else{ $Unit_suffix = "" }
+                        $Uptime = $Uptime + "$([string]$Timespan.Minutes + " min" + $Unit_suffix)"
+                    }
                     $SystemProperty["Uptime"] = $Uptime -join ", "
                 }
-                "shell" { $SystemProperty["Shell"] = "PowerShell $($PSVersionTable.PSVersion)" }
+                "shell" {
+                    switch($Shell.ToLower()){
+                        "command" { $SystemProperty["Shell"] = "Command $($SystemProperty["Kernel"])" }
+                        default   { $SystemProperty["Shell"] = "PowerShell $($PSVersionTable.PSVersion)" }
+                    }
+                }
                 "cpu" { $SystemProperty["CPU"] = $(((($ComputerInfo_CPU.ProcessorNameString -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($Env:NUMBER_OF_PROCESSORS) @") }
                 "memory" {
-                    $Memory = Get-WmiObject Win32_PhysicalMemory
+                    if($PSVersionTable.PSVersion.Major -eq 5){
+                        $Memory = Get-WmiObject Win32_PhysicalMemory
+                    }else{
+                        $Memory = wmic MemoryChip get Capacity | ? { $_.Length -gt 0 }
+                        $Memory = $Memory[1..$($Memory.Count)] | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
+                    }
                     $Memory_Total = "$(($Memory | Measure-Object -Sum -Property Capacity).Sum/1048576)MiB"
                     [string[]]$Memory_Units = @()
                     $Memory_Modules = @{ }
                     $Memory | foreach {
                         $Memory_Modules["$($_.Capacity/1048576)MiB"] = $Memory_Modules["$($_.Capacity/1048576)MiB"] + 1
                     }
-                    $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x" + [string]$_.Name)" }
+                    $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + " x " + [string]$_.Name)" }
                     $SystemProperty["Memory"] = [string]$($Memory_Total + " ($($Memory_Units -join ','))")
                 }
             }
@@ -112,8 +130,7 @@ process
     }
 }
 
-end
-{
+end {
     function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0)
     {
         if ($PadLength -gt 0)
@@ -127,13 +144,16 @@ end
         Write-Host -Object $Name -ForegroundColor $ColorScheme_Keys -NoNewline
         Write-Host -Object $Value -ForegroundColor $ColorScheme_Values
     }
-    
+    switch($AsciiLogo.ToLower()){
+        "powershell" { $Logo = $Logo_PowerShell }
+        default { $Logo = $Logo_Windows }
+    }
     $LogoPadLength = $($Logo | Measure-Object -Property Length -Maximum).Maximum + $PadLeft + $PadRight
     
     Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Primary -NoNewline
     Write-Host -Object '@' -ForegroundColor $ColorScheme_Secondary -NoNewline
     Write-Host -Object $Env:COMPUTERNAME -ForegroundColor $ColorScheme_Primary -NoNewline
-    Write-Host -Object "$('.' + $ComputerInfo_MachineDomain)" -ForegroundColor $ColorScheme_Primary
+    Write-Host -Object "$ComputerInfo_MachineDomain" -ForegroundColor $ColorScheme_Primary
     
     # Generate dash-bar of equal length of username@FQDN
     $i = 0
@@ -143,9 +163,8 @@ end
         $bar = $bar + "-"
         $i++
     }
-    until ($i -eq "$Env:USERNAME`@$Env:COMPUTERNAME.$ComputerInfo_MachineDomain".Length)
+    until ($i -eq "$Env:USERNAME`@$Env:COMPUTERNAME.$ComputerInfo_MachineDomain".Length-1)
     
-    #TODO: Got lazy here, I just wanted it to run.
     $i = 0
     Write-Host -Object "".PadLeft($PadLeft) -NoNewline
     Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
