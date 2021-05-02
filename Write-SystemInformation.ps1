@@ -108,6 +108,20 @@ process
                         default   { $SystemProperty["Shell"] = "PowerShell $($PSVersionTable.PSVersion)" }
                     }
                 }
+                "terminal" {
+                    if($IsWindowsTerminal) {
+                        $wt_exe = Get-Item -Path (Get-Command wt).Source
+                        if($wt_exe.Target.Length -gt 0) {
+                            $SystemProperty["Terminal"] = "Windows Terminal $($wt_exe.Target.Split('\')[-2].Split('_')[-4])"
+                        } else {
+                            $SystemProperty["Terminal"] = "Windows Terminal $(($wt_exe | Split-Path -Parent).Split('\')[-1].Split('_')[1])"
+                        }
+                    }elseif($IsCodeTerminal) {
+                        $SystemProperty["Terminal"] = "VS Code $((code -v)[0]) Integrated Terminal"
+                    }else{
+                        $SystemProperty["Terminal"] = "Windows Console $($SystemProperty["Kernel"])"
+                    }
+                }
                 "cpu" { $SystemProperty["CPU"] = $(((($ComputerInfo_CPU.ProcessorNameString -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($Env:NUMBER_OF_PROCESSORS) @") }
                 "memory" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
@@ -130,7 +144,8 @@ process
     }
 }
 
-end {
+end
+{
     function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0)
     {
         if ($PadLength -gt 0)
