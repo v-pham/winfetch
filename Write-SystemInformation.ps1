@@ -34,14 +34,17 @@ begin
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
 
 [string[]]$Logo_PowerShell = @"
-       __________________
-     /OA(  V||||||||||||||y
-    /////\  \\\\\\\\\\\\\V/
-   ///////\  \\\\\\\\\\\V/
-  ///////'  .A\\\\\\\\\V/
- /////'  ='AV///////////
-///'  =AV(''''''''')AV/
-'O|v////////////////O
+                               
+       __________________      
+     /OA(  V||||||||||||||y    
+    /////\  \\\\\\\\\\\\\V/    
+   ///////\  \\\\\\\\\\\V/     
+  ///////'  .A\\\\\\\\\V/      
+ /////'  ='AV///////////       
+///'  =AV(''''''''')AV/        
+'O|v////////////////O          
+                               
+                               
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
     
     $ColorScheme_Logo = 'Blue'
@@ -122,7 +125,7 @@ process
                         $SystemProperty["Terminal"] = "Windows Console $($SystemProperty["Kernel"])"
                     }
                 }
-                "cpu" { $SystemProperty["CPU"] = $(((($ComputerInfo_CPU.ProcessorNameString -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($Env:NUMBER_OF_PROCESSORS) @") }
+                "cpu" { $SystemProperty["CPU"] = $(((($ComputerInfo_CPU.ProcessorNameString -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($Env:NUMBER_OF_PROCESSORS) @") -replace '\s+',' ' }
                 "memory" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
                         $Memory = Get-WmiObject Win32_PhysicalMemory
