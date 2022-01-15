@@ -28,6 +28,9 @@
    # Show a display, with manually set "Command" shell for use when invoked from Command Prompt
    neofetch -shell command
 #>
+
+. $PSScriptRoot\Get-OSReleaseInfo.ps1
+
 function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0)
 {
     if ($PadLength -gt 0)
@@ -41,6 +44,7 @@ function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0
     Write-Host -Object $Name -ForegroundColor $ColorScheme_Keys -NoNewline
     Write-Host -Object $Value -ForegroundColor $ColorScheme_Values
 }
+
 function Write-SystemInformation {
 [CmdletBinding()]
 [Alias('screenfetch', 'neofetch', 'winfetch', 'sysfetch')]
@@ -100,13 +104,13 @@ begin
     
     $SystemProperty = [ordered]@{ }
     
-    # Sort PropertyList to preferred ordered
+    # Sort PropertyList to preferred order
     $AllProperties = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
 }
 
 process
 {
-    $ComputerInfo_OS = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+    $ComputerInfo_OS = Get-OSReleaseInfo
     $ComputerInfo_CPU = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor\0'
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
     try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
@@ -121,15 +125,7 @@ process
         {
             switch ($Property.ToLower())
             {
-                "os" { 
-                    if(Test-Path $Env:SystemDrive\etc\os-release){
-                        $OSRelease = @{}
-                        $(Get-Content $Env:SystemDrive\etc\os-release).split([Environment]::NewLine) | foreach { $OSRelease."$($_.Split('=')[0])" = $_.Split('=')[-1].Trim('"') }
-                        $SystemProperty["OS"] = [string]$($OSRelease.ProductName + " (" + $OSRelease.DisplayVersion + ") " + $ComputerInfo_OS_arch) 
-                    }else{
-                        $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS_DisplayId + ") " + $ComputerInfo_OS_arch) 
-                    }
-                }
+                "os" { $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS_DisplayId + ") " + $ComputerInfo_OS_arch) }
                 "host" { $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion) }
                 "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
                 "uptime" {
@@ -246,4 +242,4 @@ end
 }
 }
 
-Export-ModuleMember -Function Write-SystemInformation
+Export-ModuleMember -Function Write-SystemInformation, Get-OSReleaseInfo
