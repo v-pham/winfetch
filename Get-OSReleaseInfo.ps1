@@ -36,3 +36,5 @@ function Get-OSReleaseInfo {
     return $OSReleaseInfo
   }
 }
+
+Export-ModuleMember -Function Get-OSReleaseInfo
