@@ -54,6 +54,9 @@ param (
     [string]$AsciiLogo = 'Windows',
     [ValidateSet('Command', 'PowerShell', IgnoreCase = $true)]
     [string]$Shell='PowerShell',
+    [Parameter(Mandatory=$False)]
+    [ValidateSet('KB','MB','GB','KiB','MiB','GiB', IgnoreCase = $true)]
+    [string]$MemoryUnit = 'GB',
     [Parameter(Mandatory = $False)]
     [string[]]$PropertyList,
     [Parameter(Mandatory = $False)]
@@ -81,14 +84,18 @@ begin
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
 
 [string[]]$Logo_PowerShell = @"
-       __________________
-     /OA(  V||||||||||||||y
-    /////\  \\\\\\\\\\\\\V/
-   ///////\  \\\\\\\\\\\V/
-  ///////'  .A\\\\\\\\\V/
- /////'  ='AV///////////
-///'  =AV(''''''''')AV/
-'O|v////////////////O
+                              
+       __________________     
+     /OA(  V||||||||||||||y   
+    /////\  \\\\\\\\\\\\\V/   
+   ///////\  \\\\\\\\\\\V/    
+  ///////'  .A\\\\\\\\\V/     
+ /////'  ='AV///////////      
+///'  =AV(''''''''')AV/       
+'O|v////////////////O         
+                              
+                              
+                              
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
 
     $ColorScheme_Logo = 'Blue'
@@ -106,6 +113,13 @@ begin
 
     # Sort PropertyList to preferred order
     $AllProperties = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
+    $MemoryDisplayUnit = @{
+        KiB = 1024
+        MiB = 1048576
+        GiB = 1073741824
+    }
+    $MemoryDisplayUnit.GetEnumerator().Name | foreach { $MemoryDisplayUnit.$($_ -replace 'i') = $MemoryDisplayUnit."$_" }
+    $MemoryUnit = $MemoryDisplayUnit.Keys | Where-Object { $_ -like "$MemoryUnit" }
 }
 
 process
@@ -177,14 +191,14 @@ process
                         $Memory = wmic MemoryChip get Capacity | ? { $_.Length -gt 0 }
                         $Memory = $Memory[1..$($Memory.Count)] | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
                     }
-                    $Memory_Total = "$(($Memory | Measure-Object -Sum -Property Capacity).Sum/1073741824)GB"
+                    $Memory_Total = "$(($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"
                     [string[]]$Memory_Units = @()
                     $Memory_Modules = @{ }
                     $Memory | foreach {
-                        $Memory_Modules["$($_.Capacity/1073741824)GB"] = $Memory_Modules["$($_.Capacity/1073741824)GB"] + 1
+                        $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
                     }
                     $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Name + " x " + [string]$_.Value)" }
-                    $SystemProperty["Memory"] = [string]$($Memory_Total + " ($($Memory_Units -join ','))")
+                    $SystemProperty["Memory"] = [string]$($Memory_Total + " ($($Memory_Units -join ', '))")
                 }
             }
         }
@@ -230,7 +244,12 @@ end
     Write-Host -Object "".PadLeft($PadLeft) -NoNewline
     Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
     Write-Host -Object "".PadLeft($PadRight) -NoNewline
-    @('Black', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'Gray') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
+    @('DarkGray', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'White') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
+    Write-Host ""
+    Write-Host -Object "".PadLeft($PadLeft) -NoNewline
+    Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
+    Write-Host -Object "".PadLeft($PadRight) -NoNewline
+    @('Black', 'DarkRed', 'DarkGreen', 'DarkYellow', 'DarkBlue', 'DarkMagenta', 'DarkCyan', 'Gray') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
     Write-Host ""
     Do
     {
@@ -241,3 +260,5 @@ end
     while ($i -lt $Logo.Count)
 }
 }
+
+Export-ModuleMember -Function @('Write-SystemInformation','Get-OSReleaseInfo') -Alias @('neofetch','osinfo')
