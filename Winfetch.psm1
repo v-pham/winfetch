@@ -90,20 +90,20 @@ begin
 ///'  =AV(''''''''')AV/
 'O|v////////////////O
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
-    
+
     $ColorScheme_Logo = 'Blue'
     $ColorScheme_Primary = 'White'
     $ColorScheme_Secondary = 'Gray'
     $ColorScheme_Keys = 'Cyan'
     $ColorScheme_Values = 'Gray'
-    
+
     if (!$PropertyList)
     {
         [string[]]$PropertyList = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
     }
-    
+
     $SystemProperty = [ordered]@{ }
-    
+
     # Sort PropertyList to preferred order
     $AllProperties = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
 }
@@ -116,7 +116,7 @@ process
     try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
     else { [string]$ComputerInfo_OS_arch = "x86" }
-    
+
     if($ComputerInfo_OS.DisplayVersion.Length -eq ""){ $ComputerInfo_OS_DisplayId = $ComputerInfo_OS.ReleaseId }else{ $ComputerInfo_OS_DisplayId = $ComputerInfo_OS.DisplayVersion }
 
     foreach ($Property in $AllProperties)
@@ -198,12 +198,12 @@ end
         default { $Logo = $Logo_Windows }
     }
     $LogoPadLength = $($Logo | Measure-Object -Property Length -Maximum).Maximum + $PadLeft + $PadRight
-    
+
     Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Primary -NoNewline
     Write-Host -Object '@' -ForegroundColor $ColorScheme_Secondary -NoNewline
     Write-Host -Object $Env:COMPUTERNAME -ForegroundColor $ColorScheme_Primary -NoNewline
     Write-Host -Object "$ComputerInfo_MachineDomain" -ForegroundColor $ColorScheme_Primary
-    
+
     # Generate dash-bar of equal length of username@FQDN
     $i = 0
     [string]$bar = ""
@@ -213,7 +213,7 @@ end
         $i++
     }
     until ($i -eq "$Env:USERNAME`@$Env:COMPUTERNAME.$ComputerInfo_MachineDomain".Length-1)
-    
+
     $i = 0
     Write-Host -Object "".PadLeft($PadLeft) -NoNewline
     Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
@@ -241,5 +241,3 @@ end
     while ($i -lt $Logo.Count)
 }
 }
-
-Export-ModuleMember -Function Write-SystemInformation, Get-OSReleaseInfo
