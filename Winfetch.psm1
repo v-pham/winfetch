@@ -140,7 +140,10 @@ process
             switch ($Property.ToLower())
             {
                 "os" { $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS_DisplayId + ") " + $ComputerInfo_OS_arch) }
-                "host" { $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion) }
+                "host" {
+                    [string]$HostModel = " (" + $ComputerInfo_OS.HostModel + ")"
+                    $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion + $HostModel)
+                }
                 "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
                 "uptime" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
