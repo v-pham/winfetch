@@ -248,12 +248,12 @@ end
     Write-Host -Object "".PadLeft($PadLeft) -NoNewline
     Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
     Write-Host -Object "".PadLeft($PadRight) -NoNewline
-    @('DarkGray', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'White') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
+    @('Black', 'DarkRed', 'DarkGreen', 'DarkYellow', 'DarkBlue', 'DarkMagenta', 'DarkCyan', 'Gray') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
     Write-Host ""
     Write-Host -Object "".PadLeft($PadLeft) -NoNewline
     Write-Host -Object $Logo[$i] -ForegroundColor $ColorScheme_Logo -NoNewline; $i++
     Write-Host -Object "".PadLeft($PadRight) -NoNewline
-    @('Black', 'DarkRed', 'DarkGreen', 'DarkYellow', 'DarkBlue', 'DarkMagenta', 'DarkCyan', 'Gray') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
+    @('DarkGray', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'White') | foreach { Write-Host "   " -BackgroundColor $_ -NoNewline };
     Write-Host ""
     Do
     {
