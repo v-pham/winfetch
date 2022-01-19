@@ -84,18 +84,18 @@ begin
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
 
 [string[]]$Logo_PowerShell = @"
-                              
-       __________________     
-     /OA(  V||||||||||||||y   
-    /////\  \\\\\\\\\\\\\V/   
-   ///////\  \\\\\\\\\\\V/    
-  ///////'  .A\\\\\\\\\V/     
- /////'  ='AV///////////      
-///'  =AV(''''''''')AV/       
-'O|v////////////////O         
-                              
-                              
-                              
+
+       __________________
+     /OA(  V||||||||||||||y
+    /////\  \\\\\\\\\\\\\V/
+   ///////\  \\\\\\\\\\\V/
+  ///////'  .A\\\\\\\\\V/
+ /////'  ='AV///////////
+///'  =AV(''''''''')AV/
+'O|v////////////////O
+
+
+
 "@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
 
     $ColorScheme_Logo = 'Blue'
@@ -141,7 +141,7 @@ process
             {
                 "os" { $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS_DisplayId + ") " + $ComputerInfo_OS_arch) }
                 "host" {
-                    [string]$HostModel = " (" + $ComputerInfo_OS.HostModel + ")"
+                    if($null -eq $ComputerInfo_OS.HostModel){ [string]$HostModel = " (" + $ComputerInfo_OS.HostModel + ")" }else{ [string]$HostModel = '' }
                     $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion + $HostModel)
                 }
                 "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
