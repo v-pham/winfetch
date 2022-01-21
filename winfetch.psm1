@@ -198,7 +198,7 @@ process
                             if($null -eq $CPUInfo["$CPUName"]){ $CPUInfo["$CPUName"] = 1 }
                             else{ $CPUInfo["$CPUName"] = $CPUInfo["$CPUName"]+1 }
                         }
-                        $SystemProperty["CPU"] = $($CPUInfo.GetEnumerator() | foreach { $($_.Value + "x" + $_.Name) }) -join ', '
+                        $SystemProperty["CPU"] = [string[]]$($CPUInfo.GetEnumerator() | foreach { [string]$($_.Value + "x" + $_.Name) }) -join ', '
                     }
                 }
                 "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK).FriendlyName -replace '\(R\)')  -join ', ') }
