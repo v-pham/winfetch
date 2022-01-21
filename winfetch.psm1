@@ -128,7 +128,7 @@ begin
 process
 {
     $ComputerInfo_OS = Get-OSReleaseInfo
-    $ComputerInfo_CPU = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor\0'
+    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
     try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
@@ -189,7 +189,18 @@ process
                         $SystemProperty["Terminal"] = "Windows Console $($SystemProperty["Kernel"])"
                     }
                 }
-                "cpu" { $SystemProperty["CPU"] = $(((($ComputerInfo_CPU.ProcessorNameString -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($Env:NUMBER_OF_PROCESSORS) @") -replace '\s+', ' ' }
+                "cpu" {
+                    if($ComputerInfo_CPU.Count -eq 1){ $SystemProperty["CPU"] = $((((($ComputerInfo_CPU.ToString().Split('  ')[0].Trim() -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($($ComputerInfo_CPU.ToString().Split('  ')[1].Trim())) @") -replace '\s+', ' ') }
+                    else{
+                        $CPUInfo = @{}
+                        $ComputerInfo_CPU | foreach {
+                            $CPUName = $((((($_.ToString().Split('  ')[0].Trim() -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($($_.ToString().Split('  ')[1].Trim())) @") -replace '\s+', ' ')
+                            if($null -eq $CPUInfo["$CPUName"]){ $CPUInfo["$CPUName"] = 1 }
+                            else{ $CPUInfo["$CPUName"] = $CPUInfo["$CPUName"]+1 }
+                        }
+                        $SystemProperty["CPU"] = $($CPUInfo.GetEnumerator() | foreach { $($_.Value + "x" + $_.Name) }) -join ', '
+                    }
+                }
                 "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK).FriendlyName -replace '\(R\)')  -join ', ') }
                 "memory" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
@@ -212,8 +223,7 @@ process
     }
 }
 
-end
-{
+end {
     switch($AsciiLogo.ToLower()){
         "powershell" { $Logo = $Logo_PowerShell }
         default { $Logo = $Logo_Windows }
@@ -265,7 +275,7 @@ end
         $i++
     }
     while ($i -lt $Logo.Count)
-}
+  }
 }
 
 Export-ModuleMember -Function @('Write-SystemInformation','Get-OSReleaseInfo') -Alias @('neofetch','osinfo')
