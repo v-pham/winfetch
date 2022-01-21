@@ -194,11 +194,12 @@ process
                     else{
                         $CPUInfo = @{}
                         $ComputerInfo_CPU | foreach {
-                            $CPUName = $((((($_.ToString().Split('  ')[0].Trim() -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($($_.ToString().Split('  ')[1].Trim())) @") -replace '\s+', ' ')
-                            if($null -eq $CPUInfo["$CPUName"]){ $CPUInfo["$CPUName"] = 1 }
-                            else{ $CPUInfo["$CPUName"] = $CPUInfo["$CPUName"]+1 }
+                          $CPUProcessors = $_.Split('@')[-1].Trim().Split(' ')[-1]
+                          $CPUName = $($_ -replace $_.Split('@')[-1].Trim().Split(' ')[-1]) -replace '@',"($CPUProcessors`T) @"
+                          if($null -eq $CPUInfo["$CPUName"]){ $CPUInfo["$CPUName"] = 1 }
+                          else{ $CPUInfo["$CPUName"] = $CPUInfo["$CPUName"]+1 }
                         }
-                        $SystemProperty["CPU"] = [string[]]$($CPUInfo.GetEnumerator() | foreach { [string]$($_.Value + "x" + $_.Name) }) -join ', '
+                        $SystemProperty["CPU"] = $($CPUInfo.GetEnumerator() | foreach { "$([string]$_.Value + "x" + $_.Name)" }) -join ', '
                     }
                 }
                 "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK).FriendlyName -replace '\(R\)')  -join ', ') }
