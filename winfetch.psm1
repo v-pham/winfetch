@@ -195,7 +195,7 @@ process
                         $CPUInfo = @{}
                         $ComputerInfo_CPU | foreach {
                           $CPUProcessors = $_.Split('@')[-1].Trim().Split(' ')[-1]
-                          $CPUName = $($_ -replace $_.Split('@')[-1].Trim().Split(' ')[-1]) -replace '@',"($CPUProcessors`T) @"
+                          $CPUName = $(((($_ -replace $_.Split('@')[-1].Trim().Split(' ')[-1]) -replace '@',"($CPUProcessors`T) @" -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace '\s+', ' '
                           if($null -eq $CPUInfo["$CPUName"]){ $CPUInfo["$CPUName"] = 1 }
                           else{ $CPUInfo["$CPUName"] = $CPUInfo["$CPUName"]+1 }
                         }
