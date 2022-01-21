@@ -216,7 +216,7 @@ process
                     $Memory | foreach {
                         $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
                     }
-                    $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Name + " x " + [string]$_.Value)" }
+                    $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x" + [string]$_.Name)" }
                     $SystemProperty["Memory"] = [string]$($Memory_Total + " ($($Memory_Units -join ', '))")
                 }
             }
