@@ -109,7 +109,7 @@ begin
     {
         [string[]]$PropertyList = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
     }
-    if((Get-Process -PID $pid).SessionID -eq 1){
+    if((Get-Process -PID $pid).SessionID -ne 0){
         $PropertyList += 'GPU'
     }
     $SystemProperty = [ordered]@{ }
@@ -190,7 +190,7 @@ process
                     }
                 }
                 "cpu" { $SystemProperty["CPU"] = $(((($ComputerInfo_CPU.ProcessorNameString -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($Env:NUMBER_OF_PROCESSORS) @") -replace '\s+', ' ' }
-                "gpu" { $SystemProperty["GPU"] = [string]$((Get-PnpDevice -Class Display -Status OK).FriendlyName -join ', ') }
+                "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK).FriendlyName -replace '\(R\)')  -join ', ') }
                 "memory" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
                         $Memory = Get-WmiObject Win32_PhysicalMemory
