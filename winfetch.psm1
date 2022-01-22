@@ -202,7 +202,7 @@ process
                         $SystemProperty["CPU"] = "$($CPUInfo.GetEnumerator() | foreach { "$([string]$_.Value + "x" + $_.Name)" })" -join ', '
                     }
                 }
-                "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK).FriendlyName -replace '\(R\)')  -join ', ') }
+                "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | ? { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
                 "memory" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
                         $Memory = Get-WmiObject Win32_PhysicalMemory
