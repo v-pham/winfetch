@@ -128,7 +128,10 @@ begin
 process
 {
     $ComputerInfo_OS = Get-OSReleaseInfo
-    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') }
+    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { 
+        $Threads = ($_ -split "\s{2,}")[-2].Trim()
+        $($_ -replace '\(R\)' -replace '\(TM\)' -replace " CPU" -split "\s{2,}")[0] -replace ' @'," ($Threads) @" -replace '\s+', ' '
+    }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
     try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
@@ -190,19 +193,17 @@ process
                     }
                 }
                 "cpu" {
-                    if($ComputerInfo_CPU.Count -eq 1){ $SystemProperty["CPU"] = $((((($ComputerInfo_CPU.ToString().Split('  ')[0].Trim() -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace "@", "($($ComputerInfo_CPU.ToString().Split('  ')[1].Trim())) @") -replace '\s+', ' ') }
+                    if($ComputerInfo_CPU.Count -eq 1){ $SystemProperty["CPU"] = $ComputerInfo_CPU }
                     else{
                         $CPUInfo = @{}
                         $ComputerInfo_CPU | foreach {
-                          $CPUProcessors = $_.Split('@')[-1].Trim().Split(' ')[-1]
-                          $CPUName = $(((($_ -replace $_.Split('@')[-1].Trim().Split(' ')[-1]) -replace '@',"($CPUProcessors`T) @" -replace '\(R\)') -replace '\(TM\)') -replace " CPU") -replace '\s+', ' '
-                          if($null -eq $CPUInfo["$CPUName"]){ $CPUInfo["$CPUName"] = 1 }
-                          else{ $CPUInfo["$CPUName"] = $CPUInfo["$CPUName"]+1 }
+                          if($null -eq $CPUInfo["$_"]){ $CPUInfo["$_"] = 1 }
+                          else{ $CPUInfo["$_"] = $CPUInfo["$_"]+1 }
                         }
-                        $SystemProperty["CPU"] = "$($CPUInfo.GetEnumerator() | foreach { "$([string]$_.Value + "x" + $_.Name)" })" -join ', '
+                        $SystemProperty["CPU"] = "$($CPUInfo.GetEnumerator() | foreach { "$([string]$_.Value + "x " + $_.Name)" })" -join ', '
                     }
                 }
-                "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | ? { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
+                "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | Where-Object { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
                 "memory" {
                     if($PSVersionTable.PSVersion.Major -eq 5){
                         $Memory = Get-WmiObject Win32_PhysicalMemory
@@ -216,7 +217,7 @@ process
                     $Memory | foreach {
                         $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
                     }
-                    $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x" + [string]$_.Name)" }
+                    $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x " + [string]$_.Name)" }
                     $SystemProperty["Memory"] = [string]$($Memory_Total + " ($($Memory_Units -join ', '))")
                 }
             }
