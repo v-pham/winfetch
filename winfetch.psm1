@@ -63,6 +63,7 @@ param (
     [Parameter(Mandatory = $False)]
     [string[]]$PropertyList,
     [Parameter(Mandatory = $False)]
+    [Alias('GPU')]
     [switch]$IncludeGPU,
     [Parameter(Mandatory = $False)]
     [int]$PadLeft = 4,
