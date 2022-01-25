@@ -87,7 +87,7 @@ begin
 :::::|||||||| |||||||||||||||||
             ' ''''::::::|||||||
                               '
-"@.Split([System.Environment]::NewLine) | foreach { $_.PadRight(32) }
+"@.Split([System.Environment]::NewLine) | Where-Object { $_.Length -gt 0 } | foreach { $_.PadRight(32) }
 
 [string[]]$Logo_PowerShell = @"
 
@@ -103,7 +103,7 @@ begin
 
 
 
-"@.Split([System.Environment]::NewLine) | foreach { $_.PadRight(32) }
+"@.Split([System.Environment]::NewLine) | Where-Object { $_.Length -gt 0 } | foreach { $_.PadRight(32) }
 
     $ColorScheme_Logo = 'Blue'
     $ColorScheme_Primary = 'White'
