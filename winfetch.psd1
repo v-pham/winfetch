@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-ModuleToProcess = 'Winfetch.psm1'
+ModuleToProcess = 'winfetch.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.0.0'
+ModuleVersion = '1.2.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
