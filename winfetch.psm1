@@ -87,23 +87,23 @@ begin
 :::::|||||||| |||||||||||||||||
             ' ''''::::::|||||||
                               '
-"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
+"@.Split([System.Environment]::NewLine) | foreach { $_.PadRight(32) }
 
 [string[]]$Logo_PowerShell = @"
-                               
-                               
-         __________________    
-       /OA(  V||||||||||||||y  
-      /////\  \\\\\\\\\\\\\V/  
-     ///////\  \\\\\\\\\\\V/   
-    ///////'  .A\\\\\\\\\V/    
-   /////'  ='AV///////////     
-  ///'  =AV(''''''''')AV/      
-  'O|v////////////////O        
-                               
-                               
-                               
-"@.Split([System.Environment]::NewLine) | ? { $_.Length -gt 0 }
+
+
+         __________________
+       /OA(  V||||||||||||||y
+      /////\  \\\\\\\\\\\\\V/
+     ///////\  \\\\\\\\\\\V/
+    ///////'  .A\\\\\\\\\V/
+   /////'  ='AV///////////
+  ///'  =AV(''''''''')AV/
+  'O|v////////////////O
+
+
+
+"@.Split([System.Environment]::NewLine) | foreach { $_.PadRight(32) }
 
     $ColorScheme_Logo = 'Blue'
     $ColorScheme_Primary = 'White'
@@ -134,7 +134,7 @@ begin
 process
 {
     $ComputerInfo_OS = Get-OSReleaseInfo
-    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { 
+    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach {
         $Threads = ($_ -split "\s{2,}")[-2].Trim()
         $($_ -replace '\(R\)' -replace '\(TM\)' -replace " CPU" -split "\s{2,}")[0] -replace ' @'," ($Threads) @" -replace '\s+', ' '
     }
@@ -211,20 +211,17 @@ process
                 }
                 "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | Where-Object { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
                 "memory" {
-                    if($PSVersionTable.PSVersion.Major -eq 5){
-                        $Memory = Get-WmiObject Win32_PhysicalMemory
-                    }else{
-                        $Memory = wmic MemoryChip get Capacity | ? { $_.Length -gt 0 }
-                        $Memory = $Memory[1..$($Memory.Count)] | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
-                    }
-                    $Memory_Total = "$(($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"
+                    $Memory = wmic MemoryChip get Capacity | ? { $_.Length -gt 0 }
+                    $Memory = $Memory[1..$($Memory.Count)] | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
+                    $Memory_Total = ($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit
+                    $Memory_Free = $((wmic os get FreePhysicalMemory /value | Where-Object { $_.Length -gt 0 }).Split('=')[-1])/$($MemoryDisplayUnit.$MemoryUnit/1024)
                     [string[]]$Memory_Units = @()
                     $Memory_Modules = @{ }
                     $Memory | foreach {
                         $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
                     }
                     $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x " + [string]$_.Name)" }
-                    $SystemProperty["Memory"] = [string]$($Memory_Total + " ($($Memory_Units -join ', '))")
+                    $SystemProperty["Memory"] = [string]$([math]::Round($($Memory_Total-$Memory_Free),2).ToString() + "/" + $Memory_Total.ToString() + "$MemoryUnit ($($Memory_Units -join ', '))")
                 }
             }
         }
