@@ -15,7 +15,7 @@
   Specify the properties to include in the displayed output.
 
  .Parameter IncludeGPU
-  Include GPU property regardless of session ID value. By default, GPU is only included by default for session IDs not equal to 0.
+  Include GPU property. By default, GPU is only included when session ID is not equal to 0.
 
  .Parameter PadLeft
   Specify the number of spaces to pad left of the ascii logo.
