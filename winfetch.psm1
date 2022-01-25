@@ -63,7 +63,7 @@ param (
     [Parameter(Mandatory = $False)]
     [string[]]$PropertyList,
     [Parameter(Mandatory = $False)]
-    [switch]IncludeGPU,
+    [switch]$IncludeGPU,
     [Parameter(Mandatory = $False)]
     [int]$PadLeft = 4,
     [Parameter(Mandatory = $False)]
@@ -114,7 +114,7 @@ begin
     {
         [string[]]$PropertyList = @('OS', 'Host', 'Kernel', 'Uptime', 'Shell', 'Terminal', 'CPU', 'Memory')
     }
-    if((Get-Process -PID $pid).SessionID -ne 0 -or $IncludeGPU.IsPresent){
+    if(((Get-Process -PID $pid).SessionID -ne 0) -or $IncludeGPU.IsPresent){
         $PropertyList += 'GPU'
     }
     $SystemProperty = [ordered]@{ }
