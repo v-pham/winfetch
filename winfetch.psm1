@@ -130,12 +130,21 @@ function Write-SystemInformation {
   process
   {
     $ComputerInfo_OS = Get-OSReleaseInfo
-    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach {
+    if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
+      Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, NumberOfEnabledCore | foreach { [string[]]$CPUQueryOutput = "$($_.Name + "  " + $_.NumberOfEnabledCore)" }
+    }else{
+      [string[]]$CPUQueryOutput = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') }
+    }
+    $ComputerInfo_CPU = $CPUQueryOutput | foreach {
       $Threads = ($_ -split "\s{2,}")[-2].Trim()
       $($_ -replace '\(R\)' -replace '\(TM\)' -replace " CPU" -split "\s{2,}")[0] -replace ' @'," ($Threads) @" -replace '\s+', ' '
     }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
-    try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
+    try {
+      [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Stop | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop)
+    }catch {
+      [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"]
+    }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
     else { [string]$ComputerInfo_OS_arch = "x86" }
 
