@@ -220,7 +220,7 @@ function Write-SystemInformation {
           "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | Where-Object { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
           "memory" {
             if($IsNano){
-              $Memory = Get-CimInstance Win32_PhysicalMemory | Select-Object -ExpandProperty Capacity
+              $Memory = Get-CimInstance -Class Win32_PerfRawData_Counters_HyperVDynamicMemoryIntegrationService | Select-Object -ExpandProperty MaximumMemoryMBytes
             }else {
               $Memory = wmic MemoryChip get Capacity | Where-Object { $_.Length -gt 0 -and $_.Trim() -notlike 'Capacity' }
             }
