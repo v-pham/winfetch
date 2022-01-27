@@ -132,7 +132,7 @@ function Write-SystemInformation {
     $ComputerInfo_OS = Get-OSReleaseInfo
     [string[]]$CPUQueryOutput = @()
     if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
-      Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, ThreadCount | foreach { $CPUQueryOutput += "$($_.Name + "  " + $_.ThreadCount)" }
+      Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, NumberOfLogicalProcessors | foreach { $CPUQueryOutput += "$($_.Name + "  " + $_.NumberOfLogicalProcessors)" }
     }else{
       (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { $CPUQueryOutput+= $_.Trim() }
     }
