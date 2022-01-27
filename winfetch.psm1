@@ -125,13 +125,18 @@ function Write-SystemInformation {
     }
     $MemoryDisplayUnit.GetEnumerator().Name | foreach { $MemoryDisplayUnit.$($_ -replace 'i') = $MemoryDisplayUnit."$_" }
     $MemoryUnit = $MemoryDisplayUnit.Keys | Where-Object { $_ -like "$MemoryUnit" }
+    if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
+      $IsNano = $true
+    }else{
+      $IsNano = $false
+    }
   }
 
   process
   {
     $ComputerInfo_OS = Get-OSReleaseInfo
     [string[]]$CPUQueryOutput = @()
-    if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
+    if($IsNano){
       Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, NumberOfLogicalProcessors | foreach { $CPUQueryOutput += "$($_.Name + "  " + $_.NumberOfLogicalProcessors)" }
     }else{
       (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { $CPUQueryOutput+= $_.Trim() }
@@ -162,9 +167,9 @@ function Write-SystemInformation {
           "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
           "uptime" {
             if($PSVersionTable.PSVersion.Major -eq 5){
-              $Timespan = New-TimeSpan -Start $([datetime]::ParseExact($(Get-WmiObject Win32_OperatingSystem | Select-Object -ExpandProperty LastBootupTime).Split('.')[0], 'yyyyMMddHHmmss', $null)) -End $(Get-Date) | Select-Object Days, Hours, Minutes
+              $Timespan = New-TimeSpan -Start (Get-CimInstance -ClassName win32_operatingsystem | Select-Object -ExpandProperty LastBootUpTime) -End (Get-Date) | Select-Object Days, Hours, Minutes
             }else{
-              $Timespan = uptime
+              $Timespan = uptime | Select-Object Days, Hours, Minutes
             }
             $Uptime = @()
             if ($Timespan.Days -gt 0) {
@@ -214,10 +219,18 @@ function Write-SystemInformation {
           }
           "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | Where-Object { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
           "memory" {
-            $Memory = wmic MemoryChip get Capacity | ? { $_.Length -gt 0 }
-            $Memory = $Memory[1..$($Memory.Count)] | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
+            if($IsNano){
+              $Memory = Get-CimInstance Win32_PhysicalMemory | Select-Object -ExpandProperty Capacity
+            }else {
+              $Memory = wmic MemoryChip get Capacity | Where-Object { $_.Length -gt 0 -and $_.Trim() -notlike 'Capacity' }
+            }
+            $Memory = $Memory | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
             $Memory_Total = ($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit
-            $Memory_Free = $((wmic os get FreePhysicalMemory /value | Where-Object { $_.Length -gt 0 }).Split('=')[-1])/$($MemoryDisplayUnit.$MemoryUnit/1024)
+            if($IsNano){
+              $Memory_Free = (Get-CIMInstance Win32_OperatingSystem | Select-Object -ExpandProperty FreePhysicalMemory)/$($MemoryDisplayUnit.$MemoryUnit/1024)
+            }else{
+              $Memory_Free = $((wmic os get FreePhysicalMemory /value | Where-Object { $_.Length -gt 0 }).Split('=')[-1])/$($MemoryDisplayUnit.$MemoryUnit/1024)
+            }
             [string[]]$Memory_Units = @()
             $Memory_Modules = @{ }
             $Memory | foreach {
