@@ -227,17 +227,17 @@ function Write-SystemInformation {
             $Memory = $Memory | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
             $Memory_Total = ($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit
             if($IsNano){
-              $Memory_Free = (Get-CIMInstance Win32_OperatingSystem | Select-Object -ExpandProperty FreePhysicalMemory)/$($MemoryDisplayUnit.$MemoryUnit/1024)
-            }else{
+              $SystemProperty["Memory"] = "$Memory_Total$($MemoryUnit)"
+            }else {
               $Memory_Free = $((wmic os get FreePhysicalMemory /value | Where-Object { $_.Length -gt 0 }).Split('=')[-1])/$($MemoryDisplayUnit.$MemoryUnit/1024)
+              [string[]]$Memory_Units = @()
+              $Memory_Modules = @{ }
+              $Memory | foreach {
+                  $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
+              }
+              $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x " + [string]$_.Name)" }
+              $SystemProperty["Memory"] = [string]$([math]::Round($($Memory_Total-$Memory_Free),2).ToString() + "/" + $Memory_Total.ToString() + "$MemoryUnit ($($Memory_Units -join ', '))")
             }
-            [string[]]$Memory_Units = @()
-            $Memory_Modules = @{ }
-            $Memory | foreach {
-                $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
-            }
-            $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x " + [string]$_.Name)" }
-            $SystemProperty["Memory"] = [string]$([math]::Round($($Memory_Total-$Memory_Free),2).ToString() + "/" + $Memory_Total.ToString() + "$MemoryUnit ($($Memory_Units -join ', '))")
           }
         }
       }
