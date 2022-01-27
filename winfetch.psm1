@@ -125,16 +125,16 @@ function Write-SystemInformation {
     }
     $MemoryDisplayUnit.GetEnumerator().Name | foreach { $MemoryDisplayUnit.$($_ -replace 'i') = $MemoryDisplayUnit."$_" }
     $MemoryUnit = $MemoryDisplayUnit.Keys | Where-Object { $_ -like "$MemoryUnit" }
-    if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
-      $IsNano = $true
-    }else{
-      $IsNano = $false
-    }
   }
 
   process
   {
     $ComputerInfo_OS = Get-OSReleaseInfo
+    if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
+      $IsNano = $true
+    }else{
+      $IsNano = $false
+    }
     [string[]]$CPUQueryOutput = @()
     if($IsNano){
       Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, NumberOfLogicalProcessors | foreach { $CPUQueryOutput += "$($_.Name + "  " + $_.NumberOfLogicalProcessors)" }
