@@ -134,10 +134,10 @@ function Write-SystemInformation {
     if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
       Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, ThreadCount | foreach { $CPUQueryOutput += "$($_.Name + "  " + $_.ThreadCount)" }
     }else{
-      (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { $CPUQueryOutput+= $_ }
+      (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { $CPUQueryOutput+= $_.Trim() }
     }
     $ComputerInfo_CPU = $CPUQueryOutput | foreach {
-      $Threads = ($_ -split "\s{2,}")[-2].Trim()
+      $Threads = ($_ -split "\s{2,}")[-1].Trim()
       $($_ -replace '\(R\)' -replace '\(TM\)' -replace " CPU" -split "\s{2,}")[0] -replace ' @'," ($Threads) @" -replace '\s+', ' '
     }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
