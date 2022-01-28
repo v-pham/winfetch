@@ -19,7 +19,7 @@ function Get-OSReleaseInfo {
   }
 
   if(!$RegistryOnly.IsPresent){
-    if(Test-Path $FilePath){
+    if((Test-Path $FilePath) -and ($null -ne $(Get-Content $FilePath))){
       $OSReleaseFile = Get-Content $FilePath
       $OSReleaseFile.split([System.Environment]::NewLine) | foreach {
         $Value_raw = $_ -replace "$($_.Split('=')[0])="

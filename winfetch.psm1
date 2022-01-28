@@ -1,4 +1,5 @@
 . $PSScriptRoot\Get-OSReleaseInfo.ps1
+. $PSScriptRoot\Export-OSReleaseInfo.ps1
 
 function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0) {
   if ($PadLength -gt 0){
@@ -267,4 +268,4 @@ function Write-SystemInformation {
   }
 }
 
-Export-ModuleMember -Function @('Write-SystemInformation','Get-OSReleaseInfo') -Alias @('neofetch','osinfo')
+Export-ModuleMember -Function @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo') -Alias @('neofetch','osinfo')
