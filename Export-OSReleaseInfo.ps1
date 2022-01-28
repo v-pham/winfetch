@@ -10,6 +10,8 @@ function Export-OSReleaseInfo {
         $Key = $_.Split('=')[0]
         $OSRelease.Map[$Key] = $_.Substring($Key.Length+1,$_.Length-$($Key.Length+1))
       }
+    }else{
+        New-Item $OSRelease.File -Value $null -Force | Out-Null
     }
     $SystemInfo_Map = @{}
   }
