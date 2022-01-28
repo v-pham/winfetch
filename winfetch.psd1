@@ -12,7 +12,7 @@
 RootModule = 'winfetch.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.5.0.0'
+ModuleVersion = '1.5.1.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'foobar'
 Copyright = '(c) vvpham. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Displays general OS release and hardware information.'
+Description = 'Displays general OS release and hardware information for the system.'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
