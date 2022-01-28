@@ -1,3 +1,6 @@
+
+. $PSScriptRoot\Test-Elevated.ps1
+
 function Export-OSReleaseInfo {
   param()
 
@@ -17,7 +20,7 @@ function Export-OSReleaseInfo {
   }
 
   process {
-    $(systeminfo | Out-String).split([Environment]::NewLine) | Where-Object { $null -ne $_ } | foreach { 
+    $(systeminfo | Out-String).split([Environment]::NewLine) | Where-Object { $null -ne $_ } | foreach {
       $SystemInfo_Map["$($_.split(':')[0] -replace ' ')"] = $_.split(':')[1]
     }
     @('HostName','OSName','Domain','SystemManufacturer','SystemModel','BIOSVersion') | ForEach-Object {
@@ -31,11 +34,17 @@ function Export-OSReleaseInfo {
   }
 
   end {
-    New-Item -Path $OSRelease.FilePath -Value $null -Force | Out-Null
-    $OSRelease.Map.GetEnumerator() | ForEach-Object {
-       "$($_.Key)=$($_.Value)" | Out-File $OSRelease.FilePath -Append
+    if(Test-Elevated){
+      New-Item -Path $OSRelease.FilePath -Value $null -Force | Out-Null
+      $OSRelease.Map.GetEnumerator() | ForEach-Object {
+        "$($_.Key)=$($_.Value)" | Out-File $OSRelease.FilePath -Append
+      }
+      $Output = $(Get-Item $OSRelease.FilePath)
+    }else{
+      Write-Error "No permissions to write to the /etc/os-release file. Key-values returned as output." -ErrorAction Continue
+      $Output = $OSRelease.Map
     }
-    return $(Get-Item $OSRelease.FilePath)
+    return $Output
   }
 }
 
