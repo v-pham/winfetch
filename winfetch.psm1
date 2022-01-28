@@ -291,4 +291,4 @@ function Write-SystemInformation {
   }
 }
 
-Export-ModuleMember -Function @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo') -Alias @('neofetch','osinfo')
+Export-ModuleMember -Function @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo','Export-OSReleaseInfo') -Alias @('neofetch','osinfo')
