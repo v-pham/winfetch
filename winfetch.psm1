@@ -162,8 +162,8 @@ function Write-SystemInformation {
         switch ($Property.ToLower()){
           "os" { $SystemProperty["OS"] = [string]$($ComputerInfo_OS.ProductName + " (" + $ComputerInfo_OS_DisplayId + ") " + $ComputerInfo_OS_arch) }
           "host" {
-            if($null -ne $ComputerInfo_OS.HostModel){ [string]$HostModel = " (" + $ComputerInfo_OS.HostModel + ")" }else{ [string]$HostModel = '' }
-            $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion + $HostModel)
+            if($null -ne $ComputerInfo_OS.SystemModel){ [string]$SystemModel = " (" + $ComputerInfo_OS.SystemModel + ")" }else{ [string]$SystemModel = '' }
+            $SystemProperty["Host"] = [string]($ComputerInfo_Host.SystemManufacturer + " " + $ComputerInfo_Host.SystemVersion + $SystemModel)
           }
           "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
           "uptime" {
@@ -291,4 +291,4 @@ function Write-SystemInformation {
   }
 }
 
-Export-ModuleMember -Function @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo','Export-OSReleaseInfo') -Alias @('neofetch','osinfo')
+Export-ModuleMember -Function @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo') -Alias @('neofetch','osinfo')
