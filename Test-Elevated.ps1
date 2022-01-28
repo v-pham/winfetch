@@ -13,17 +13,17 @@ function Test-Elevated {
    # Show default
    Test-Elevated
 #>
-    [CmdletBinding()]
-    [Alias('IsAdmin')]
-    [OutputType([bool])]
-    Param(
-      [Parameter(Mandatory=$false)]
-      [switch]$False
-    )
+  [CmdletBinding()]
+  [Alias('IsAdmin')]
+  [OutputType([bool])]
+  Param(
+    [Parameter(Mandatory=$false)]
+    [switch]$IsNot
+  )
 
-    if($False.IsPresent){
-      return !(([Security.Principal.WindowsIdentity]::GetCurrent()).Groups -contains "S-1-5-32-544")
-    }else{
-      return (([Security.Principal.WindowsIdentity]::GetCurrent()).Groups -contains "S-1-5-32-544")
-    }
+  if($IsNot.IsPresent){
+    return !$(([Security.Principal.WindowsIdentity]::GetCurrent()).Groups -contains "S-1-5-32-544")
+  }else{
+    return $(([Security.Principal.WindowsIdentity]::GetCurrent()).Groups -contains "S-1-5-32-544")
+  }
 }
