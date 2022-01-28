@@ -32,7 +32,7 @@ function Export-OSReleaseInfo {
   end {
     New-Item -Path $OSRelease.File -Value $null -Force | Out-Null
     $OSRelease.Map.GetEnumerator() | foreach {
-      Add-Content -Path $OSRelease.File -Value "$($_.Key)=$($_.Value)"
+       "$($_.Key)=$($_.Value)" | Out-File $OSReleaseInfo.File -Append
     }
     return $(Get-Item $OSRelease.File)
   }
