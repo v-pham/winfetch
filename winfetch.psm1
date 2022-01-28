@@ -1,6 +1,6 @@
-. $PSScriptRoot\Get-OSReleaseInfo.ps1
-. $PSScriptRoot\Export-OSReleaseInfo.ps1
-. $PSScriptRoot\Test-Elevated.ps1
+. $PSScriptRoot\tools\Get-OSReleaseInfo.ps1
+. $PSScriptRoot\tools\Export-OSReleaseInfo.ps1
+. $PSScriptRoot\tools\Test-Elevated.ps1
 
 function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0) {
   if ($PadLength -gt 0){
