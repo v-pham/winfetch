@@ -131,12 +131,27 @@ function Write-SystemInformation {
   process
   {
     $ComputerInfo_OS = Get-OSReleaseInfo
-    $ComputerInfo_CPU = (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach {
-      $Threads = ($_ -split "\s{2,}")[-2].Trim()
+    if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
+      $IsNano = $true
+    }else{
+      $IsNano = $false
+    }
+    [string[]]$CPUQueryOutput = @()
+    if($IsNano){
+      Get-CimInstance -ComputerName localhost -Class CIM_Processor -ErrorAction Stop | Select-Object Name, NumberOfLogicalProcessors | foreach { $CPUQueryOutput += "$($_.Name + "  " + $_.NumberOfLogicalProcessors)" }
+    }else{
+      (wmic cpu get 'Name,NumberOfLogicalProcessors' | Out-String).split([System.Environment]::NewLine) | Where-Object { $_.Trim().Length -gt 0 -and !$_.StartsWith('Name') } | foreach { $CPUQueryOutput+= $_.Trim() }
+    }
+    $ComputerInfo_CPU = $CPUQueryOutput | foreach {
+      $Threads = ($_ -split "\s{2,}")[-1].Trim()
       $($_ -replace '\(R\)' -replace '\(TM\)' -replace " CPU" -split "\s{2,}")[0] -replace ' @'," ($Threads) @" -replace '\s+', ' '
     }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
-    try { [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop) } catch { [string]$ComputerInfo_MachineDomain = "" }
+    try {
+      [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Stop | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop)
+    }catch {
+      [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"]
+    }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
     else { [string]$ComputerInfo_OS_arch = "x86" }
 
@@ -153,9 +168,9 @@ function Write-SystemInformation {
           "kernel" { $SystemProperty["Kernel"] = [string]$ComputerInfo_OS.CurrentMajorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentMinorVersionNumber + "." + [string]$ComputerInfo_OS.CurrentBuildNumber + "." + [string]$ComputerInfo_OS.UBR }
           "uptime" {
             if($PSVersionTable.PSVersion.Major -eq 5){
-              $Timespan = New-TimeSpan -Start $([datetime]::ParseExact($(Get-WmiObject Win32_OperatingSystem | Select-Object -ExpandProperty LastBootupTime).Split('.')[0], 'yyyyMMddHHmmss', $null)) -End $(Get-Date) | Select-Object Days, Hours, Minutes
+              $Timespan = New-TimeSpan -Start (Get-CimInstance -ClassName win32_operatingsystem | Select-Object -ExpandProperty LastBootUpTime) -End (Get-Date) | Select-Object Days, Hours, Minutes
             }else{
-              $Timespan = uptime
+              $Timespan = uptime | Select-Object Days, Hours, Minutes
             }
             $Uptime = @()
             if ($Timespan.Days -gt 0) {
@@ -205,17 +220,25 @@ function Write-SystemInformation {
           }
           "gpu" { $SystemProperty["GPU"] = [string]$(((Get-PnpDevice -Class Display -Status OK | Where-Object { $_.FriendlyName -notlike 'Microsoft*Remote*' }).FriendlyName -replace '\(R\)')  -join ', ') }
           "memory" {
-            $Memory = wmic MemoryChip get Capacity | ? { $_.Length -gt 0 }
-            $Memory = $Memory[1..$($Memory.Count)] | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
-            $Memory_Total = ($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit
-            $Memory_Free = $((wmic os get FreePhysicalMemory /value | Where-Object { $_.Length -gt 0 }).Split('=')[-1])/$($MemoryDisplayUnit.$MemoryUnit/1024)
-            [string[]]$Memory_Units = @()
-            $Memory_Modules = @{ }
-            $Memory | foreach {
-                $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
+            if($IsNano){
+              $Memory = (Get-CimInstance -Class Win32_PerfRawData_Counters_HyperVDynamicMemoryIntegrationService | Select-Object -ExpandProperty MaximumMemoryMBytes)*1048576
+            }else {
+              $Memory = wmic MemoryChip get Capacity | Where-Object { $_.Length -gt 0 -and $_.Trim() -notlike 'Capacity' }
             }
-            $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x " + [string]$_.Name)" }
-            $SystemProperty["Memory"] = [string]$([math]::Round($($Memory_Total-$Memory_Free),2).ToString() + "/" + $Memory_Total.ToString() + "$MemoryUnit ($($Memory_Units -join ', '))")
+            $Memory = $Memory | foreach { New-Object pscustomobject -Property @{ Capacity = $_ } }
+            $Memory_Total = ($Memory | Measure-Object -Sum -Property Capacity).Sum/$MemoryDisplayUnit.$MemoryUnit
+            if($IsNano){
+              $SystemProperty["Memory"] = "$Memory_Total$($MemoryUnit)"
+            }else {
+              $Memory_Free = $((wmic os get FreePhysicalMemory /value | Where-Object { $_.Length -gt 0 }).Split('=')[-1])/$($MemoryDisplayUnit.$MemoryUnit/1024)
+              [string[]]$Memory_Units = @()
+              $Memory_Modules = @{ }
+              $Memory | foreach {
+                  $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] = $Memory_Modules["$($_.Capacity/$MemoryDisplayUnit.$MemoryUnit)$MemoryUnit"] + 1
+              }
+              $Memory_Modules.GetEnumerator() | foreach { $Memory_Units = $Memory_Units + "$([string]$_.Value + "x " + [string]$_.Name)" }
+              $SystemProperty["Memory"] = [string]$([math]::Round($($Memory_Total-$Memory_Free),2).ToString() + "/" + $Memory_Total.ToString() + "$MemoryUnit ($($Memory_Units -join ', '))")
+            }
           }
         }
       }
