@@ -1,6 +1,5 @@
-. $PSScriptRoot\Get-OSReleaseInfo.ps1
-. $PSScriptRoot\Export-OSReleaseInfo.ps1
-. $PSScriptRoot\Test-Elevated.ps1
+. $PSScriptRoot\Get-OSReleaseData.ps1
+. $PSScriptRoot\Write-OSRelease.ps1
 
 function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0) {
   if ($PadLength -gt 0){
@@ -52,7 +51,7 @@ function Write-SystemInformation {
 #>
 
   [CmdletBinding()]
-  [Alias('screenfetch', 'neofetch', 'winfetch', 'sysfetch')]
+  [Alias('screenfetch', 'neofetch', 'sysfetch', 'winfetch')]
   param (
     [Parameter(Mandatory = $False)]
     [ValidateSet('Windows', 'PowerShell', 'None', IgnoreCase = $true)]
@@ -131,7 +130,7 @@ function Write-SystemInformation {
 
   process
   {
-    $ComputerInfo_OS = Get-OSReleaseInfo
+    $ComputerInfo_OS = Get-OSReleaseData
     if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
       $IsNano = $true
     }else{
@@ -292,4 +291,4 @@ function Write-SystemInformation {
   }
 }
 
-Export-ModuleMember -Function @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo','Test-Elevated') -Alias @('neofetch','IsAdmin','osinfo')
+Export-ModuleMember -Function @('Write-SystemInformation') -Alias @('screenfetch', 'neofetch', 'sysfetch', 'winfetch')

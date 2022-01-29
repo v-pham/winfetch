@@ -12,7 +12,7 @@
 RootModule = 'winfetch.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.5.4.0'
+ModuleVersion = '1.5.5.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -69,7 +69,7 @@ Description = 'Displays general OS release and hardware information for the syst
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @('Write-SystemInformation','Export-OSReleaseInfo','Get-OSReleaseInfo','Test-Elevated')
+FunctionsToExport = @('Write-SystemInformation','Write-OSRelease','Get-OSReleaseData','Test-Elevated')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
@@ -78,7 +78,7 @@ CmdletsToExport = @()
 VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('IsAdmin','neofetch','osinfo')
+AliasesToExport = @('neofetch','Test-Elevated','Export-OSRelease','osinfo')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -129,4 +129,3 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-

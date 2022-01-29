@@ -1,8 +1,8 @@
 
 . $PSScriptRoot\Test-Elevated.ps1
 
-function Write-OSReleaseInfo {
-  [Alias('Export-OSReleaseInfo')]
+function Write-OSRelease {
+  [Alias('Export-OSRelease')]
   param()
 
   begin {
@@ -49,4 +49,4 @@ function Write-OSReleaseInfo {
   }
 }
 
-Export-ModuleMember -Function Write-OSReleaseInfo -Alias Export-OSReleaseInfo
+Export-ModuleMember -Function Write-OSRelease -Alias Export-OSRelease
