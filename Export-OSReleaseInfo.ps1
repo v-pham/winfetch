@@ -1,14 +1,15 @@
 
 . $PSScriptRoot\Test-Elevated.ps1
 
-function Export-OSReleaseInfo {
+function Write-OSReleaseInfo {
+  [Alias('Export-OSReleaseInfo')]
   param()
 
   begin {
     $OSRelease = @{}
     $OSRelease.FilePath = "$Env:SystemRoot\system32\drivers\etc\os-release"
     $OSRelease.Map = [ordered]@{}
-    if(!$(Test-Path $OSRelease.FilePath) -or ($null -ne (Get-Content $OSRelease.FilePath))){
+    if($(Test-Path $OSRelease.FilePath) -and ((Get-Content $OSRelease.FilePath)).Trim().Length -gt 0){
       (Get-Content $OSRelease.FilePath).split([environment]::NewLine) | Where-Object { [string]$_ -gt 0 } | foreach {
         $Key = $_.Split('=')[0]
         $OSRelease.Map[$Key] = $_.Substring($Key.Length+1,$_.Length-$($Key.Length+1))
@@ -48,4 +49,4 @@ function Export-OSReleaseInfo {
   }
 }
 
-Export-ModuleMember -Function Export-OSReleaseInfo
+Export-ModuleMember -Function Write-OSReleaseInfo -Alias Export-OSReleaseInfo
