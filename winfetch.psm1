@@ -152,6 +152,7 @@ function Write-SystemInformation {
     }catch {
       [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"]
     }
+    if(!$ComputerInfo_MachineDomain.StartsWith('.')){ $ComputerInfo_MachineDomain =  ".$ComputerInfo_MachineDomain" }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
     else { [string]$ComputerInfo_OS_arch = "x86" }
 

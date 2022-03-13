@@ -49,4 +49,4 @@ function Write-OSRelease {
   }
 }
 
-Export-ModuleMember -Function Write-OSRelease -Alias Export-OSRelease
+Export-ModuleMember -Function 'Write-OSRelease','Test-Elevated' -Alias @('Export-OSRelease', 'IsAdmin')
