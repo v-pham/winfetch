@@ -148,9 +148,9 @@ function Write-SystemInformation {
     }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
     try {
-      [string]$ComputerInfo_MachineDomain = "." + $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Stop | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop)
+      [string]$ComputerInfo_MachineDomain = "$(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Stop | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop)".ToUpper()
     }catch {
-      [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"]
+      [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"].ToUpper()
     }
     if(!$ComputerInfo_MachineDomain.StartsWith('.')){ $ComputerInfo_MachineDomain =  ".$ComputerInfo_MachineDomain" }
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
