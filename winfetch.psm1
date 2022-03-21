@@ -253,9 +253,9 @@ function Write-SystemInformation {
     }
     $LogoPadLength = $($Logo | Measure-Object -Property Length -Maximum).Maximum + $PadLeft + $PadRight
 
-    Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Primary -NoNewline
+    Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Logo -NoNewline
     Write-Host -Object '@' -ForegroundColor $ColorScheme_Secondary -NoNewline
-    Write-Host -Object $Env:COMPUTERNAME -ForegroundColor $ColorScheme_Primary -NoNewline
+    Write-Host -Object $Env:COMPUTERNAME -ForegroundColor $ColorScheme_Logo -NoNewline
     Write-Host -Object "$ComputerInfo_MachineDomain" -ForegroundColor $ColorScheme_Primary
 
     # Generate dash-bar of equal length of username@FQDN
