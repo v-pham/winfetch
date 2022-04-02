@@ -147,12 +147,16 @@ function Write-SystemInformation {
       $($_ -replace '\(R\)' -replace '\(TM\)' -replace " CPU" -split "\s{2,}")[0] -replace ' @'," ($Threads) @" -replace '\s+', ' '
     }
     $ComputerInfo_Host = Get-ItemProperty -Path 'HKLM:\HARDWARE\DESCRIPTION\System\BIOS'
+    $ComputerInfo_Host | Get-Member -MemberType NoteProperty | Where-Object { $_.Name -notlike 'PS*' } | foreach {
+      if($ComputerInfo_OS[$_.Name]){ $ComputerInfo_Host."$($_.Name)" = $ComputerInfo_OS[$_.Name] }
+    }
     try {
-      [string]$ComputerInfo_MachineDomain = "$(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Stop | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop)".ToUpper()
+      [string]$ComputerInfo_MachineDomain = "$(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Stop | Select-Object -ExpandProperty MachineDomain -ErrorAction Stop)"
     }catch {
-      [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"].ToUpper()
+      [string]$ComputerInfo_MachineDomain = $ComputerInfo_OS["MachineDomain"]
     }
     if(!$ComputerInfo_MachineDomain.StartsWith('.')){ $ComputerInfo_MachineDomain =  ".$ComputerInfo_MachineDomain" }
+    $ComputerInfo_MachineDomain = $ComputerInfo_MachineDomain.ToLower()
     if ($env:PROCESSOR_ARCHITECTURE -match "64") { [string]$ComputerInfo_OS_arch = "x86_64" }
     else { [string]$ComputerInfo_OS_arch = "x86" }
 
@@ -195,14 +199,14 @@ function Write-SystemInformation {
             }
           }
           "terminal" {
-            if($IsWindowsTerminal -or $Env:WT_SESSION.Length -gt 0) {
+            if($Env:IsWindowsTerminal -or $Env:WT_SESSION.Length -gt 0) {
               $wt_exe = Get-Item -Path (Get-Command wt).Source
               if($wt_exe.Target.Length -gt 0) {
                 $SystemProperty["Terminal"] = "Windows Terminal $($wt_exe.Target.Split('\')[-2].Split('_')[-4])"
               } else {
                 $SystemProperty["Terminal"] = "Windows Terminal $(($wt_exe | Split-Path -Parent).Split('\')[-1].Split('_')[1])"
               }
-            }elseif($IsCodeTerminal) {
+            }elseif($Env:IsCodeTerminal) {
               $SystemProperty["Terminal"] = "VS Code $((code -v)[0]) Integrated Terminal"
             }else{
               $SystemProperty["Terminal"] = "Windows Console $($SystemProperty["Kernel"])"
@@ -255,7 +259,7 @@ function Write-SystemInformation {
 
     Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Logo -NoNewline
     Write-Host -Object '@' -ForegroundColor $ColorScheme_Secondary -NoNewline
-    Write-Host -Object $Env:COMPUTERNAME -ForegroundColor $ColorScheme_Logo -NoNewline
+    Write-Host -Object $Env:COMPUTERNAME.ToLower() -ForegroundColor $ColorScheme_Logo -NoNewline
     Write-Host -Object "$ComputerInfo_MachineDomain" -ForegroundColor $ColorScheme_Logo
 
     # Generate dash-bar of equal length of username@FQDN
