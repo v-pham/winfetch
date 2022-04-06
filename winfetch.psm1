@@ -206,7 +206,7 @@ function Write-SystemInformation {
               } else {
                 $SystemProperty["Terminal"] = "Windows Terminal $(($wt_exe | Split-Path -Parent).Split('\')[-1].Split('_')[1])"
               }
-            }elseif($Env:IsCodeTerminal) {
+            }elseif($Env:IsCodeTerminal -eq $true) {
               $SystemProperty["Terminal"] = "VS Code $((code -v)[0]) Integrated Terminal"
             }else{
               $SystemProperty["Terminal"] = "Windows Console $($SystemProperty["Kernel"])"
