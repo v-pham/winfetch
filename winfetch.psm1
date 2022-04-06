@@ -199,7 +199,7 @@ function Write-SystemInformation {
             }
           }
           "terminal" {
-            if($Env:IsWindowsTerminal -or $Env:WT_SESSION.Length -gt 0) {
+            if(($Env:IsWindowsTerminal -eq $true) -or ($Env:WT_SESSION -ne $null)) {
               $wt_exe = Get-Item -Path (Get-Command wt).Source
               if($wt_exe.Target.Length -gt 0) {
                 $SystemProperty["Terminal"] = "Windows Terminal $($wt_exe.Target.Split('\')[-2].Split('_')[-4])"
