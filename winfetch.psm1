@@ -12,13 +12,6 @@ function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0
   Write-Host -Object $Value -ForegroundColor $ColorScheme_Values
 }
 
-$Manifest = Get-ChildItem $PSScriptRoot -Filter '*psd1'
-if(Test-Path $Manifest){
-  Get-Content $Manifest | Where-Object { $_.Trim() -like 'ModuleVersion*=*'} | foreach { $Version = $_.Split('=')[-1].Trim() -replace '"' -replace "'" }
-}else{
-  $Version = 1.6
-}
-
 function Write-SystemInformation {
 <#
  .Synopsis
@@ -61,6 +54,8 @@ function Write-SystemInformation {
   [Alias('screenfetch', 'neofetch', 'sysfetch', 'winfetch')]
   param (
     [Parameter(Mandatory = $False)]
+    [switch]$Version,
+    [Parameter(Mandatory = $False)]
     [ValidateSet('Windows', 'PowerShell', 'None', IgnoreCase = $true)]
     [string]$AsciiLogo = 'Windows',
     [ValidateSet('Command', 'PowerShell', IgnoreCase = $true)]
@@ -76,14 +71,13 @@ function Write-SystemInformation {
     [Parameter(Mandatory = $False)]
     [int]$PadLeft = 4,
     [Parameter(Mandatory = $False)]
-    [int]$PadRight = 4,
-    [Parameter(Mandatory = $False)]
-    [switch]${'-Version'}
+    [int]$PadRight = 4
   )
 
   begin {
-    if(${-Version}.IsPresent){
-      return $Version
+    if($Version.IsPresent){
+      Get-ChildItem 'C:\program files\PowerShell\Modules\winfetch\1.6.2' -Filter *psd1 | Get-Content | Where-Object { $_.Trim() -like 'ModuleVersion*=*' } | foreach { $_.Trim().Split('=')[-1].Trim() -replace '"' -replace "'" } | Set-Variable ScriptVersion
+      return "$($MyInvocation.Line.Split(' ')[0]) v$ScriptVersion"
     }
 [string[]]$Logo_Windows = @"
                   ......::::::|
@@ -141,10 +135,9 @@ function Write-SystemInformation {
   }
 
   process {
-  if(${-Version}.IsPresent){
-    break
-  }
-  {
+    if($Version.IsPresent){
+      break
+    }
     $ComputerInfo_OS = Get-OSReleaseData
     if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
       $IsNano = $true
@@ -271,7 +264,6 @@ function Write-SystemInformation {
       default { $Logo = $Logo_Windows }
     }
     $LogoPadLength = $($Logo | Measure-Object -Property Length -Maximum).Maximum + $PadLeft + $PadRight
-
     Write-Host -Object $Env:USERNAME.PadLeft($LogoPadLength + $Env:USERNAME.Length) -ForegroundColor $ColorScheme_Logo -NoNewline
     Write-Host -Object '@' -ForegroundColor $ColorScheme_Secondary -NoNewline
     Write-Host -Object $Env:COMPUTERNAME.ToLower() -ForegroundColor $ColorScheme_Logo -NoNewline

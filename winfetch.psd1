@@ -1,4 +1,4 @@
-# Previous version: 1.6.2
+# Previous version: 1.6.4
 #
 # Module manifest for module 'Winfetch'
 #
@@ -13,7 +13,7 @@
 RootModule = 'winfetch.psm1'
 
 # Version number of this module.
-ModuleVersion  = '1.6.3'
+ModuleVersion    = '1.7.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
