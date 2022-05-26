@@ -76,7 +76,10 @@ function Write-SystemInformation {
 
   begin {
     if($Version.IsPresent){
-      Get-ChildItem 'C:\program files\PowerShell\Modules\winfetch\1.6.2' -Filter *psd1 | Get-Content | Where-Object { $_.Trim() -like 'ModuleVersion*=*' } | foreach { $_.Trim().Split('=')[-1].Trim() -replace '"' -replace "'" } | Set-Variable ScriptVersion
+      Get-ChildItem $PSScriptRoot -Filter *psd1 | Get-Content | Where-Object { $_.Trim() -like 'ModuleVersion*=*' } | foreach { $_.Trim().Split('=')[-1].Trim() -replace '"' -replace "'" } | Set-Variable ScriptVersion
+      if($ScriptVersion.Length -eq 0){
+        $ScriptVersion = '1.7'
+      }
       return "$($MyInvocation.Line.Split(' ')[0]) v$ScriptVersion"
     }
 [string[]]$Logo_Windows = @"
