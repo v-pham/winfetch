@@ -7,7 +7,7 @@ function Write-OSRelease {
 
   begin {
     $OSRelease = @{}
-    $OSRelease.FilePath = "$Env:SystemRoot\system32\drivers\etc\os-release"
+    $OSRelease.FilePath = "$Env:ALLUSERSPROFILE\os-release"
     $OSRelease.Map = [ordered]@{}
     if($(Test-Path $OSRelease.FilePath) -and ((Get-Content $OSRelease.FilePath)).Trim().Length -gt 0){
       (Get-Content $OSRelease.FilePath).split([environment]::NewLine) | Where-Object { [string]$_ -gt 0 } | foreach {
@@ -15,7 +15,13 @@ function Write-OSRelease {
         $OSRelease.Map[$Key] = $_.Substring($Key.Length+1,$_.Length-$($Key.Length+1))
       }
     }else{
-        New-Item -Path $OSRelease.FilePath -Value $null -Force | Out-Null
+      New-Item -Path $OSRelease.FilePath -Value $null -Force | Out-Null
+      if(Test-Path $Env:SystemDrive\etc){
+        if(Test-Path $Env:SystemDrive\etc\os-release){
+          Remove-Item $Env:SystemDrive\etc\os-release -Force
+        }
+        New-Item -Path $Env:SystemDrive\etc -Name os-release -ItemType SymbolicLink -Value $OSRelease.FilePath | Out-Null
+      }
     }
     $SystemInfo_Map = @{}
   }

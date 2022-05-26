@@ -12,6 +12,13 @@ function Write-SystemProperty([string]$Name, [string]$Value, [int]$PadLength = 0
   Write-Host -Object $Value -ForegroundColor $ColorScheme_Values
 }
 
+$Manifest = Get-ChildItem $PSScriptRoot -Filter '*psd1'
+if(Test-Path $Manifest){
+  Get-Content $Manifest | Where-Object { $_.Trim() -like 'ModuleVersion*=*'} | foreach { $Version = $_.Split('=')[-1].Trim() -replace '"' -replace "'" }
+}else{
+  $Version = 1.6
+}
+
 function Write-SystemInformation {
 <#
  .Synopsis
@@ -69,10 +76,15 @@ function Write-SystemInformation {
     [Parameter(Mandatory = $False)]
     [int]$PadLeft = 4,
     [Parameter(Mandatory = $False)]
-    [int]$PadRight = 4
+    [int]$PadRight = 4,
+    [Parameter(Mandatory = $False)]
+    [switch]${'-Version'}
   )
 
   begin {
+    if(${-Version}.IsPresent){
+      return $Version
+    }
 [string[]]$Logo_Windows = @"
                   ......::::::|
 .....:::::::| |||||||||||||||||
@@ -128,7 +140,10 @@ function Write-SystemInformation {
     $MemoryUnit = $MemoryDisplayUnit.Keys | Where-Object { $_ -like "$MemoryUnit" }
   }
 
-  process
+  process {
+  if(${-Version}.IsPresent){
+    break
+  }
   {
     $ComputerInfo_OS = Get-OSReleaseData
     if($ComputerInfo_OS['ProductName'] -like '*Nano*'){
