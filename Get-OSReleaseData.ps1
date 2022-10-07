@@ -4,7 +4,7 @@ function Get-OSReleaseData {
     [Parameter(Position=0)][string[]]$Key,
     [switch]$RegistryOnly,
     [switch]$FileOnly,
-    [Alias('Path')][string]$FilePath="$Env:SystemRoot\system32\drivers\etc\os-release"
+    [Alias('Path')][string]$FilePath="$Env:SystemDrive\etc\os-release"
   )
 
   $OSReleaseInfo = [ordered]@{}
