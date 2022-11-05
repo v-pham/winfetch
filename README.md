@@ -32,5 +32,5 @@ PS > neofetch
 The following command to create a nuget package and publish to a local or private PS repository:
 
 ```
-PS > Publish-Module -Name winfetch -Repository $SOME_PSREPO
+PS> Publish-Module -Name winfetch -Repository $SOME_PSREPO
 ```
