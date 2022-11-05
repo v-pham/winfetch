@@ -1,4 +1,3 @@
-
 . $PSScriptRoot\Test-Elevated.ps1
 
 function Write-OSRelease {

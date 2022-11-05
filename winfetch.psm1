@@ -6,7 +6,7 @@ $Export = @{
   Function = [System.Collections.ArrayList]::New()
   Alias = [System.Collections.ArrayList]::New()
 }
-Get-ChildItem functions\public -Filter '*ps1' | foreach {
+Get-ChildItem $PSScriptRoot\functions\public -Filter '*ps1' | foreach {
 . $_.FullName
   $Export.Function.Add($_.BaseName) | Out-Null
   ((Get-Command $_.BaseName | Select-Object -ExpandProperty Definition).Split([Environment]::NewLine) | Where-Object {

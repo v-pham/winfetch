@@ -1,3 +1,5 @@
+. $PSScriptRoot\..\private\Write-SystemProperty.ps1
+
 function Write-SystemInformation {
   <#
    .Synopsis
