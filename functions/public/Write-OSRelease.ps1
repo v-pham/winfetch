@@ -58,5 +58,3 @@ function Write-OSRelease {
     return $Output
   }
 }
-
-Export-ModuleMember -Function 'Write-OSRelease','Test-Elevated' -Alias @('Export-OSRelease', 'IsAdmin') -ErrorAction SilentlyContinue

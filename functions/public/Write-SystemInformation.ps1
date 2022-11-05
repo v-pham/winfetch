@@ -292,5 +292,3 @@ function Write-SystemInformation {
     } while ($i -lt $Logo.Count)
   }
 }
-
-Export-ModuleMember -Function Write-SystemInformation -Alias @('screenfetch', 'neofetch', 'sysfetch', 'winfetch')
