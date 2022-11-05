@@ -1,5 +1,3 @@
-. $PSScriptRoot\functions\private\Write-SystemProperty.ps1
-
 function Write-SystemInformation {
   <#
    .Synopsis
@@ -67,7 +65,7 @@ function Write-SystemInformation {
       if($ScriptVersion.Length -eq 0){
         $ScriptVersion = '1.7'
       }
-      return "$($MyInvocation.Line.Split(' ')[0]) v$ScriptVersion"
+      return "$($MyInvocation.Line.Split(' ')[0]) v$ScriptVersion".ToString()
     }
 [string[]]$Logo_Windows = @"
                   ......::::::|

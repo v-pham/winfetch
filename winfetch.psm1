@@ -1,4 +1,4 @@
-Get-ChildItem $PSScriptRoot\function\private -Filter '*ps1' | foreach {
+Get-ChildItem $PSScriptRoot\functions\private -Filter '*ps1' | foreach {
 . $_.FullName
 }
 
